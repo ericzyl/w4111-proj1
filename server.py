@@ -29,7 +29,7 @@ app = Flask(__name__, template_folder=tmpl_dir)
 #
 #     DATABASEURI = "postgresql://gravano:foobar@34.75.94.195/proj1part2"
 #
-DATABASEURI = "postgresql://user:password@34.75.94.195/proj1part2"
+DATABASEURI = "postgresql://yz3323:170761@34.74.171.121/proj1part2"
 
 
 #
@@ -44,7 +44,7 @@ engine = create_engine(DATABASEURI)
 conn = engine.connect()
 
 # The string needs to be wrapped around text()
-
+# this create a new table
 conn.execute(text("""CREATE TABLE IF NOT EXISTS test (
   id serial,
   name text
@@ -116,7 +116,7 @@ def index():
   #
   # example of a database query 
   #
-  cursor = g.conn.execute("SELECT name FROM test")
+  cursor = g.conn.execute(text("SELECT name FROM test"))
   g.conn.commit()
 
   # 2 ways to get results
@@ -127,11 +127,11 @@ def index():
     names.append(result[0])  
 
   # Indexing result by column name
-  names = []
-  results = cursor.mappings.all()
-  for result in results:
-    names.append(result["name"])
-  cursor.close()
+  # names = []
+  # results = cursor.mappings.all()
+  # for result in results:
+  #   names.append(result["name"])
+  # cursor.close()
 
   #
   # Flask uses Jinja templates, which is an extension to HTML where you can

@@ -45,15 +45,15 @@ conn = engine.connect()
 
 # The string needs to be wrapped around text()
 # this create a new table
-conn.execute(text("""CREATE TABLE IF NOT EXISTS test (
-  id serial,
-  name text
-);"""))
-conn.execute(text("""INSERT INTO test(name) VALUES ('grace hopper'), ('alan turing'), ('ada lovelace');"""))
+# conn.execute(text("""CREATE TABLE IF NOT EXISTS test (
+#   id serial,
+#   name text
+# );"""))
+# conn.execute(text("""INSERT INTO test(name) VALUES ('grace hopper'), ('alan turing'), ('ada lovelace');"""))
 
 # To make the queries run, we need to add this commit line
 
-conn.commit() 
+# conn.commit() 
 
 @app.before_request
 def before_request():
@@ -179,6 +179,27 @@ def index():
 @app.route('/another')
 def another():
   return render_template("another.html")
+
+@app.route('/interesting')
+def interesting():
+  return render_template("interesting.html")
+
+@app.route('/recipes')
+def recipes():
+  print(request.args)
+
+  cursor = g.conn.execute(text("SELECT recipe_name, instruction FROM rec_upload"))
+  g.conn.commit()
+
+  #rec_names = []
+  recipes_list = []
+  for result in cursor:
+    recipes_list.append({'name':result[0], 'instruction':result[1]})
+  
+  context = dict(data = recipes_list)
+
+  return render_template("recipes.html", **context)
+
 
 
 # Example of adding new data to the database

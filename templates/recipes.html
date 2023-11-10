@@ -1,0 +1,51 @@
+<html>
+  <style>
+    body{ 
+      font-size: 15pt;
+      font-family: arial;
+    }
+    table {
+    border-collapse: collapse;
+    width: 100%;
+    }
+    th, td {
+      border: 1px solid black;
+      padding: 8px;
+      text-align: left;
+    } 
+  </style>
+
+
+<body>
+  <h1>Recipes!!!</h1>
+
+  <!-- <div>
+    {% for n in data %}
+    <div>{{n}}</div>
+    {% endfor %}
+  </div> -->
+  <table>
+    <!-- Table Header -->
+    <thead>
+      <tr>
+        <th>Recipe Name</th>
+        <th>Instructions</th>
+      </tr>
+    </thead>
+    <!-- Table Body -->
+    <tbody>
+      {% for recipe in data %}
+      <tr>
+        <td>{{ recipe.name }}</td>
+        <td>{{ recipe.instruction }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  
+
+
+</body>
+
+
+</html>

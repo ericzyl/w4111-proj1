@@ -12,7 +12,7 @@ import os
   # accessible as a variable in index.html:
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
-from flask import Flask, request, render_template, g, redirect, Response, abort
+from flask import Flask, request, render_template, g, redirect, Response, abort, session
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
@@ -187,7 +187,7 @@ def interesting():
 @app.route('/recipes')
 def recipes():
   print(request.args)
-
+  
   cursor = g.conn.execute(text("SELECT recipe_name, instruction FROM rec_upload"))
   g.conn.commit()
 
@@ -199,6 +199,55 @@ def recipes():
   context = dict(data = recipes_list)
 
   return render_template("recipes.html", **context)
+
+# to new recipe page
+@app.route('/new_recipe')
+def new_recipe():
+  return render_template("new_recipe.html")
+
+# add new recipe
+@app.route('/add_recipe', methods=['POST'])
+def add_recipe():
+  name = request.form['name']
+  instruction = request.form['instruction']
+  prep_time = request.form['prep_time']
+  cook_time = request.form['cook_time']
+  serving = request.form['serving']
+  param_dict = {'name' : name, 'instruction' : instruction,
+                'prep_time' : prep_time, 'cook_time' : cook_time,
+                'serving' : serving}
+  psql_query = 'INSERT INTO rec_upload (recipe_name, instruction, prep_time, cook_time, serving) VALUES(:name, :instruction, :prep_time, :cook_time, :serving)'
+  g.conn.execute(text(psql_query), param_dict)
+  g.conn.commit()
+  return redirect('/')
+
+
+# to login page
+@app.route('/login_page')
+def login_page():
+  return render_template("login_page.html")
+
+# login to account
+@app.route('/login', methods=['POST'])
+def login():
+  msg = ''
+  username = request.form['username']
+  password = request.form['password']
+
+  # check database
+  psql_query = text('SELECT username, password FROM users WHERE username = :username AND password = :password')
+  cursor = g.conn.execute(psql_query, {'username':username, 'password':password})
+  account = cursor.fetchone()
+
+  # check if such account exist
+  if account:
+    session['loggedin'] = True
+    session['usernmae'] = account['username']
+    return 'Login Success'
+  else:
+    msg = 'Incorrect username or passowrd.'
+  
+  return render_template('index.html', msg=msg)
 
 
 
@@ -212,10 +261,10 @@ def add():
   return redirect('/')
 
 
-@app.route('/login')
-def login():
-    abort(401)
-    this_is_never_executed()
+# @app.route('/login')
+# def login():
+#     abort(401)
+#     this_is_never_executed()
 
 
 if __name__ == "__main__":

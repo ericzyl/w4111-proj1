@@ -1,0 +1,27 @@
+<html>
+    <body>
+
+        <h3>Add recipes here!!!</h3>
+        <hr/>
+
+        <form method="POST" action="/add_recipe">
+            <label for = "name">Recipe name</label><br>
+            <input type = "text" name = "name" placeholder="name"/><br>
+
+            <label for = "instruction">Instruction</label><br>
+            <textarea name = "instruction" placeholder = "instruction"></textarea><br>
+
+            <label for = "prep_time">Prep time</label><br>
+            <input type = "number" name = "prep_time" placeholder="real number (min)"/><br>
+            
+            <label for = "cook_time">Cook time</label><br>
+            <input type = "number" name = "cook_time" placeholder="real number (min)"/><br> 
+
+            <label for = "serving">Serving</label><br>
+            <input type = "number" name = "serving" placeholder="integer"/><br><br>
+
+            <input type="submit" value="Add"></p>
+        </form>
+
+    </body>
+</html>

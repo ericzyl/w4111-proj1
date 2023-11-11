@@ -12,7 +12,7 @@ import os
   # accessible as a variable in index.html:
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
-from flask import Flask, request, render_template, g, redirect, Response, abort, session
+from flask import Flask, request, render_template, g, redirect, Response, abort, session, url_for
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
@@ -263,6 +263,45 @@ def verify_password(entry, record):
 
 
 
+# logout
+# to be tested
+@app.route('/logout', methods=['POST'])
+def logout():
+   session.pop('loggedin', None)
+   session.pop('id', None)
+   session.pop('username', None)
+   # Redirect to login page
+   return redirect(url_for('login'))
+
+
+# ----- registration system ------
+# to registration page
+@app.route('/registration_page')
+def registration_page():
+  return render_template("registration_page.html")
+
+@app.route('/register', methods=['GET','POST'])
+def register():
+  msg = ''
+  username = request.form['username']
+  password = request.form['password']
+  user_profile = request.form['user_profile']
+  param_dict = {'username' : username, 'password' : password, 'user_profile' : user_profile}
+  
+  try:
+    psql_query = text('INSERT INTO users (username, password, user_profile) VALUES(:username, :password, :user_profile)')
+    g.conn.execute(psql_query, param_dict)
+    g.conn.commit()
+    msg = 'Registration success'
+
+  except Exception as e:
+    print(f'Error: {e}')
+    msg = 'There is an error during registration.'
+    return render_template('registration_page.html', msg=msg)
+  
+  return render_template('login_page.html', msg=msg)
+
+# not used
 # Example of adding new data to the database
 @app.route('/add', methods=['POST'])
 def add():

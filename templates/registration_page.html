@@ -1,0 +1,29 @@
+<html>
+    <body>
+
+        <h3>Create your recipe account here.</h3>
+        <hr/>
+        <p>Password requirements:<br>
+            At least 9 characters long.<br>
+            Contain at least one alphabetic character.<br>
+            Contain at least one numeric character.<br>
+            Username and password can not be empty.
+        </p>
+
+
+        <form method="POST" action="/register">
+            <label for = "username">Username</label><br>
+            <input type = "text" name = "username" placeholder="your username"/><br>
+
+            <label for = "password">Password</label><br>
+            <input type = "password" name = "password" placeholder="enter your password"/><br>
+
+            <label for = "user_profile">Profile</label><br>
+            <textarea name = "user_profile" placeholder = "anything you want to share..."></textarea><br>
+            
+            <div class="msg">{{ msg }}</div><br>
+            <input type="submit" value="Create">
+        </form>
+
+    </body>
+</html>

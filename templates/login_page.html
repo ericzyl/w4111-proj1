@@ -3,16 +3,16 @@
 
         <h3>Sign in to your recipe account.</h3>
         <hr/>
+        <div class="msg">{{ msg }}</div><br>
 
         <form method="POST" action="/login">
             <label for = "username">Username</label><br>
-            <input type = "text" name = "username" placeholder="username"/><br><br>
+            <input type = "text" name = "username" placeholder="username"/><br>
 
             <label for = "password">Password</label><br>
-            <input type = "password" name = "password" placeholder="enter your password"/><br>
+            <input type = "password" name = "password" placeholder="enter your password"/><br><br>
             
-            <div class="msg">{{ msg }}</div>
-            <input type="submit" value="Login"></p>
+            <input type="submit" value="Login">
         </form>
 
     </body>

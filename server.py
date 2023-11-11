@@ -265,13 +265,13 @@ def verify_password(entry, record):
 
 # logout
 # to be tested
-@app.route('/logout', methods=['POST'])
+@app.route('/logout')
 def logout():
    session.pop('loggedin', None)
    session.pop('id', None)
    session.pop('username', None)
    # Redirect to login page
-   return redirect(url_for('login'))
+   return redirect('/')
 
 
 # ----- registration system ------

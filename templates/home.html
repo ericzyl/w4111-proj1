@@ -1,0 +1,44 @@
+<html>
+    <style>
+        body{ 
+          font-size: 15pt;
+          font-family: arial;
+        }
+        table {
+        border-collapse: collapse;
+        width: 100%;
+        }
+        th, td {
+          border: 1px solid black;
+          padding: 8px;
+          text-align: left;
+        } 
+    </style>
+    <body>
+        <h2>{{username}}'s home page</h2>
+        <hr/>
+        <div><b>My profile: </b>{{profile}}</div><br><br>
+
+        <div><b>My recipe:</b></div><br>
+        <table>
+            <!-- Table Header -->
+            <thead>
+              <tr>
+                <th>Recipe Name</th>
+                <th>Instructions</th>
+              </tr>
+            </thead>
+            <!-- Table Body -->
+            <tbody>
+              {% for recipe in data %}
+              <tr>
+                <td>{{ recipe.name }}</td>
+                <td>{{ recipe.instruction }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+        </table>
+
+
+    </body>
+</html>

@@ -248,7 +248,7 @@ def login():
       if account and verify_password(account[1],password):
         session['loggedin'] = True
         session['username'] = account[0]
-        return 'Login Success'
+        return redirect(url_for('home'))
       else:
         msg = 'Incorrect username or passowrd.'
 
@@ -300,6 +300,32 @@ def register():
     return render_template('registration_page.html', msg=msg)
   
   return render_template('login_page.html', msg=msg)
+
+
+# user home page
+@app.route('/login/home', methods=['GET'])
+def home():
+    # Check login status
+    if 'loggedin' in session:
+        # show homepage and profile
+        user = session['username']
+        profile_query = text('SELECT user_profile, user_id FROM users WHERE username = :username')
+        param_dict = {'username': user}
+        val = g.conn.execute(profile_query, param_dict).fetchone()
+
+
+        # fetch user recipes
+        user_id = {'user_id':val[1]}
+        cursor = g.conn.execute(text("SELECT recipe_name, instruction FROM rec_upload WHERE user_id =:user_id"), user_id)
+
+        recipes_list = []
+        for result in cursor:
+          recipes_list.append({'name':result[0], 'instruction':result[1]})
+        context = dict(data = recipes_list)        
+        # g.conn.commit()
+        return render_template('home.html', username=session['username'], profile= val[0], **context)
+    
+    return redirect(url_for('login'))
 
 # not used
 # Example of adding new data to the database

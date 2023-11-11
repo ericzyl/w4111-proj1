@@ -17,6 +17,8 @@ from flask import Flask, request, render_template, g, redirect, Response, abort,
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
 
+app.secret_key = 'cs4111'
+
 
 #
 # The following is a dummy URI that does not connect to a valid database. You will need to modify it to connect to your Part 2 database in order to use the data.
@@ -228,26 +230,36 @@ def login_page():
   return render_template("login_page.html")
 
 # login to account
-@app.route('/login', methods=['POST'])
+@app.route('/login', methods=['GET','POST'])
 def login():
   msg = ''
-  username = request.form['username']
-  password = request.form['password']
+  if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
+    username = request.form['username']
+    password = request.form['password']
 
-  # check database
-  psql_query = text('SELECT username, password FROM users WHERE username = :username AND password = :password')
-  cursor = g.conn.execute(psql_query, {'username':username, 'password':password})
-  account = cursor.fetchone()
+    try:
+      # check database
+      psql_query = text('SELECT username, password FROM users WHERE username = :username')
+      cursor = g.conn.execute(psql_query, {'username':username})
+      account = cursor.fetchone()
+      print(account)
 
-  # check if such account exist
-  if account:
-    session['loggedin'] = True
-    session['usernmae'] = account['username']
-    return 'Login Success'
-  else:
-    msg = 'Incorrect username or passowrd.'
+    # check if such account exist
+      if account and verify_password(account[1],password):
+        session['loggedin'] = True
+        session['username'] = account[0]
+        return 'Login Success'
+      else:
+        msg = 'Incorrect username or passowrd.'
+
+    except Exception as e:
+      print(f'Error: {e}')
+      msg = 'There is an error during login.'
   
-  return render_template('index.html', msg=msg)
+  return render_template('login_page.html', msg=msg)
+
+def verify_password(entry, record):
+  return entry == record
 
 
 

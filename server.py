@@ -118,15 +118,15 @@ def index():
   #
   # example of a database query 
   #
-  cursor = g.conn.execute(text("SELECT name FROM test"))
-  g.conn.commit()
+  # cursor = g.conn.execute(text("SELECT name FROM test"))
+  # g.conn.commit()
 
   # 2 ways to get results
 
   # Indexing result by column number
-  names = []
-  for result in cursor:
-    names.append(result[0])  
+  # names = []
+  # for result in cursor:
+  #   names.append(result[0])  
 
   # Indexing result by column name
   # names = []
@@ -161,14 +161,15 @@ def index():
   #     <div>{{n}}</div>
   #     {% endfor %}
   #
-  context = dict(data = names)
+  # context = dict(data = names)
 
 
   #
   # render_template looks in the templates/ folder for files.
   # for example, the below file reads template/index.html
   #
-  return render_template("index.html", **context)
+  # return render_template("index.html", **context)
+  return render_template('index.html')
 
 #
 # This is an example of a different path.  You can see it at:
@@ -348,15 +349,15 @@ def user_new_recipe():
   g.conn.commit()
   return redirect(url_for('home'))
 
-# not used
+# not used (test stuff)
 # Example of adding new data to the database
-@app.route('/add', methods=['POST'])
-def add():
-  name = request.form['name']
-  params_dict = {"name":name}
-  g.conn.execute(text('INSERT INTO test(name) VALUES (:name)'), params_dict)
-  g.conn.commit()
-  return redirect('/')
+# @app.route('/add', methods=['POST'])
+# def add():
+#   name = request.form['name']
+#   params_dict = {"name":name}
+#   g.conn.execute(text('INSERT INTO test(name) VALUES (:name)'), params_dict)
+#   g.conn.commit()
+#   return redirect('/')
 
 
 # @app.route('/login')

@@ -186,6 +186,7 @@ def another():
 def interesting():
   return render_template("interesting.html")
 
+# display all recipes in the database
 @app.route('/recipes')
 def recipes():
   print(request.args)
@@ -202,6 +203,7 @@ def recipes():
 
   return render_template("recipes.html", **context)
 
+# add new recipe glbally
 # to new recipe page
 @app.route('/new_recipe')
 def new_recipe():
@@ -224,6 +226,7 @@ def add_recipe():
   return redirect('/')
 
 
+# ----- authentication system -----
 # to login page
 @app.route('/login_page')
 def login_page():
@@ -239,7 +242,7 @@ def login():
 
     try:
       # check database
-      psql_query = text('SELECT username, password FROM users WHERE username = :username')
+      psql_query = text('SELECT username, password, user_id FROM users WHERE username = :username')
       cursor = g.conn.execute(psql_query, {'username':username})
       account = cursor.fetchone()
       print(account)
@@ -248,6 +251,7 @@ def login():
       if account and verify_password(account[1],password):
         session['loggedin'] = True
         session['username'] = account[0]
+        session['user_id'] = account[2]
         return redirect(url_for('home'))
       else:
         msg = 'Incorrect username or passowrd.'
@@ -261,17 +265,14 @@ def login():
 def verify_password(entry, record):
   return entry == record
 
-
-
 # logout
-# to be tested
 @app.route('/logout')
 def logout():
-   session.pop('loggedin', None)
-   session.pop('id', None)
-   session.pop('username', None)
-   # Redirect to login page
-   return redirect('/')
+  session.pop('loggedin', None)
+  session.pop('id', None)
+  session.pop('username', None)
+  # Redirect to login page
+  return redirect('/')
 
 
 # ----- registration system ------
@@ -326,6 +327,26 @@ def home():
         return render_template('home.html', username=session['username'], profile= val[0], **context)
     
     return redirect(url_for('login'))
+
+# ----- logged-in user recipe -----
+@app.route('/user_new_recipe', methods=['GET','POST'])
+def user_new_recipe():
+  # retrieve user inputs
+  name = request.form['name']
+  instruction = request.form['instruction']
+  prep_time = request.form['prep_time']
+  cook_time = request.form['cook_time']
+  serving = request.form['serving']
+
+  # retrieve in-session user info
+  user_id = session['user_id']
+  param_dict = {'name' : name, 'instruction' : instruction,
+                'prep_time' : prep_time, 'cook_time' : cook_time,
+                'serving' : serving, 'user_id' : user_id} 
+  psql_query = 'INSERT INTO rec_upload (recipe_name, instruction, prep_time, cook_time, serving, user_id) VALUES(:name, :instruction, :prep_time, :cook_time, :serving, :user_id)'
+  g.conn.execute(text(psql_query), param_dict)
+  g.conn.commit()
+  return redirect(url_for('home'))
 
 # not used
 # Example of adding new data to the database

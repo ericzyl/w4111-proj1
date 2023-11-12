@@ -37,7 +37,26 @@
               </tr>
               {% endfor %}
             </tbody>
-        </table>
+        </table><br><br>
+
+        <form method="POST" action="/user_new_recipe">
+          <label for = "name">Recipe name</label><br>
+          <input type = "text" name = "name" placeholder="name"/><br>
+
+          <label for = "instruction">Instruction</label><br>
+          <textarea name = "instruction" placeholder = "instruction"></textarea><br>
+
+          <label for = "prep_time">Prep time</label><br>
+          <input type = "number" name = "prep_time" placeholder="real number (min)"/><br>
+          
+          <label for = "cook_time">Cook time</label><br>
+          <input type = "number" name = "cook_time" placeholder="real number (min)"/><br> 
+
+          <label for = "serving">Serving</label><br>
+          <input type = "number" name = "serving" placeholder="integer"/><br><br>
+
+          <input type="submit" value="Add"></p>
+      </form>
         <br><br>
         <p><a href="{{url_for('logout')}}">Logout</a></p>
 

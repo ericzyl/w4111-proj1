@@ -1,0 +1,64 @@
+<html>
+  <style>
+    body{ 
+      font-size: 15pt;
+      font-family: arial;
+    }
+    table {
+    border-collapse: collapse;
+    width: 100%;
+    }
+    th, td {
+      border: 1px solid black;
+      padding: 8px;
+      text-align: left;
+    } 
+  </style>
+
+
+<body>
+  <h1>Recipes Info</h1>
+  <p><a href="{{url_for('home')}}">Back</a></p>
+
+  <!-- <div>
+    {% for n in data %}
+    <div>{{n}}</div>
+    {% endfor %}
+  </div> -->
+  <table>
+    <!-- Table Header -->
+    <thead>
+      <tr>
+        <th>Recipe ID</th>
+        <th>Name</th>
+        <th>User</th>
+        <th>Date</th>
+        <th>Instructions</th>
+        <th>Prep Time</th>
+        <th>Cook Time</th>
+        <th>Serving</th>
+      </tr>
+    </thead>
+    <!-- Table Body -->
+    <tbody>
+      {% for recipe in data %}
+      <tr>
+        <td>{{ recipe.recipe_id }}</td>
+        <td>{{ recipe.recipe_name }}</td>
+        <td>{{ recipe.username }}</td>
+        <td>{{ recipe.on_date }}</td>
+        <td>{{ recipe.instruction }}</td>
+        <td>{{ recipe.prep_time }}</td>
+        <td>{{ recipe.cook_time }}</td>
+        <td>{{ recipe.serving }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  
+
+
+</body>
+
+
+</html>

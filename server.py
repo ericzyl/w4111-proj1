@@ -12,7 +12,7 @@ import os
   # accessible as a variable in index.html:
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
-from flask import Flask, request, render_template, g, redirect, Response, abort, session, url_for
+from flask import Flask, request, render_template, g, redirect, Response, abort, session, url_for, flash
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
@@ -330,9 +330,11 @@ def home():
     return redirect(url_for('login'))
 
 # ----- logged-in user recipe -----
+# user could add their recipe to the database
 @app.route('/user_new_recipe', methods=['GET','POST'])
 def user_new_recipe():
   # retrieve user inputs
+  msg = ''
   name = request.form['name']
   instruction = request.form['instruction']
   prep_time = request.form['prep_time']
@@ -340,14 +342,42 @@ def user_new_recipe():
   serving = request.form['serving']
 
   # retrieve in-session user info
-  user_id = session['user_id']
-  param_dict = {'name' : name, 'instruction' : instruction,
-                'prep_time' : prep_time, 'cook_time' : cook_time,
-                'serving' : serving, 'user_id' : user_id} 
-  psql_query = 'INSERT INTO rec_upload (recipe_name, instruction, prep_time, cook_time, serving, user_id) VALUES(:name, :instruction, :prep_time, :cook_time, :serving, :user_id)'
-  g.conn.execute(text(psql_query), param_dict)
-  g.conn.commit()
-  return redirect(url_for('home'))
+  try:
+    user_id = session['user_id']
+    param_dict = {'name' : name, 'instruction' : instruction,
+                  'prep_time' : prep_time, 'cook_time' : cook_time,
+                  'serving' : serving, 'user_id' : user_id} 
+    psql_query = 'INSERT INTO rec_upload (recipe_name, instruction, prep_time, cook_time, \
+                  serving, user_id) VALUES(:name, :instruction, :prep_time, :cook_time, :serving, :user_id)'
+    g.conn.execute(text(psql_query), param_dict)
+    g.conn.commit()
+    msg = 'New recipe added'
+    flash(msg)
+  except Exception as e:
+    print(f'Error: {e}')
+    msg = 'Please fill in correct information.'
+    flash(msg)
+    return redirect(url_for('home'))
+
+  return redirect(url_for('home'),)
+
+
+# loggedin user can view full information of the recipes
+@app.route('/loggedin_user_all_recipes', methods=['GET'])
+def loggedin_user_all_recipes():
+  cursor = g.conn.execute(text("SELECT r.recipe_id, r.recipe_name, u.username, r.on_date, r.instruction, \
+                               r.prep_time, r.cook_time, r.serving\
+                               FROM rec_upload r, users u WHERE r.user_id = u.user_id\
+                               ORDER BY r.on_date DESC"))
+  #g.conn.commit()
+  info_list = []
+  for result in cursor:
+    info_list.append({'recipe_id':result[0], 'recipe_name':result[1], 'username':result[2], 'on_date':result[3],
+                      'instruction':result[4], 'prep_time':result[5], 'cook_time':result[6], 'serving':result[7]})
+  
+  context = dict(data = info_list)
+
+  return render_template("recipe_all_info.html", **context) 
 
 # not used (test stuff)
 # Example of adding new data to the database

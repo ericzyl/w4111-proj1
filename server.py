@@ -192,7 +192,7 @@ def interesting():
 def recipes():
   print(request.args)
   
-  cursor = g.conn.execute(text("SELECT recipe_name, instruction FROM rec_upload"))
+  cursor = g.conn.execute(text("SELECT recipe_name, instruction FROM rec_upload LIMIT 8"))
   g.conn.commit()
 
   #rec_names = []

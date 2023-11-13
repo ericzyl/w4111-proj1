@@ -213,18 +213,29 @@ def new_recipe():
 # add new recipe
 @app.route('/add_recipe', methods=['POST'])
 def add_recipe():
+  msg = ''
   name = request.form['name']
   instruction = request.form['instruction']
   prep_time = request.form['prep_time']
   cook_time = request.form['cook_time']
   serving = request.form['serving']
-  param_dict = {'name' : name, 'instruction' : instruction,
-                'prep_time' : prep_time, 'cook_time' : cook_time,
-                'serving' : serving}
-  psql_query = 'INSERT INTO rec_upload (recipe_name, instruction, prep_time, cook_time, serving) VALUES(:name, :instruction, :prep_time, :cook_time, :serving)'
-  g.conn.execute(text(psql_query), param_dict)
-  g.conn.commit()
-  return redirect('/')
+
+  try:
+    param_dict = {'name' : name, 'instruction' : instruction,
+                  'prep_time' : prep_time, 'cook_time' : cook_time,
+                  'serving' : serving}
+    psql_query = 'INSERT INTO rec_upload (recipe_name, instruction, prep_time, cook_time, serving) VALUES(:name, :instruction, :prep_time, :cook_time, :serving)'
+    g.conn.execute(text(psql_query), param_dict)
+    g.conn.commit()
+    msg = 'You\'ve just added a new recipe!'
+    flash(msg)
+  except Exception as e:
+    print(f'Error: {e}')
+    msg = 'Please fill in correct information'
+    flash(msg)
+    return redirect(url_for('new_recipe'))
+  
+  return render_template('success.html')
 
 
 # ----- authentication system -----

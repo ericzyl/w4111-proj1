@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script>
+        // redirect after 3 seconds
+        setTimeout(function() {
+            window.location.href = "{{ url_for('index') }}";
+        }, 3000);
+    </script>
+</head>
+<body>
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul class=flashes>
+    {% for message in messages %}
+      <li>{{ message }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+<!-- Add the rest of your HTML here -->
+
+</body>
+</html>

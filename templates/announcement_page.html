@@ -1,0 +1,76 @@
+<html>
+  <style>
+    body{ 
+      font-size: 15pt;
+      font-family: arial;
+    }
+    table {
+    border-collapse: collapse;
+    width: 100%;
+    }
+    th, td {
+      border: 1px solid black;
+      padding: 8px;
+      text-align: left;
+    } 
+  </style>
+
+
+<body>
+  <h1>Announcements</h1>
+  <p><a href="{{url_for('home')}}">Back</a></p>
+
+  <!-- <div>
+    {% for n in data %}
+    <div>{{n}}</div>
+    {% endfor %}
+  </div> -->
+  <table>
+    <!-- Table Header -->
+    <thead>
+      <tr>
+        <th>Datetime</th>
+        <th>Name</th>
+        <th>Link</th>
+        <th>Content</th>
+      </tr>
+    </thead>
+    <!-- Table Body -->
+    <tbody>
+      {% for post in data %}
+      <tr>
+        <td>{{ post.time }}</td>
+        <td>{{ post.user }}</td>
+        <td>{{ post.link }}</td>
+        <td>{{ post.description }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <br><br>
+  <form method="POST" action="/user_new_announcement">
+
+    <label for = "content">Content</label><br>
+    <textarea name = "content" placeholder = "i want to say..."></textarea><br>
+
+    <label for = "link">Link</label><br>
+    <textarea name = "link" placeholder = "here is the link... "></textarea><br>
+
+    <input type="submit" value="Submit"></p>
+  </form>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul class=flashes>
+      {% for message in messages %}
+        <li>{{ message }}</li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+  
+
+
+</body>
+
+
+</html>

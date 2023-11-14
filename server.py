@@ -390,6 +390,46 @@ def loggedin_user_all_recipes():
 
   return render_template("recipe_all_info.html", **context) 
 
+
+@app.route('/announcement', methods=['GET'])
+def announcement():
+  cursor = g.conn.execute(text("SELECT a.at_time, u.username, a.link, a.description\
+                               FROM ann_post a, users u \
+                               WHERE a.user_id = u.user_id \
+                               ORDER BY a.at_time DESC"))
+  ann_list = []
+  for result in cursor:
+    ann_list.append({'time':result[0], 'user':result[1], 'link':result[2], 
+                     'description':result[3]})
+  
+  context = dict(data=ann_list)
+
+  return render_template("announcement_page.html", **context)
+
+@app.route('/user_new_announcement', methods=['GET','POST'])
+def user_new_announcement():
+  msg = ''
+  content = request.form['content']
+  link = request.form['link']
+
+  try:
+    user_id = session['user_id']
+    param_dict = {'link':link, 'content':content, 'user_id':user_id}
+    query = text("INSERT INTO ann_post (link, description, user_id) \
+                 VALUES(:link, :content, :user_id)")
+    g.conn.execute(query, param_dict)
+    g.conn.commit()
+    msg = "New announcement posted"
+    flash(msg)
+  except Exception as e:
+    print(f'Error: {e}')
+    msg = 'Please fill the form correctly'
+    flash(msg)
+    return redirect(url_for('announcement'))
+  
+  return redirect(url_for('announcement'))
+
+
 # not used (test stuff)
 # Example of adding new data to the database
 # @app.route('/add', methods=['POST'])

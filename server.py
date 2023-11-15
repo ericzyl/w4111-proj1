@@ -396,7 +396,8 @@ def announcement():
   cursor = g.conn.execute(text("SELECT a.at_time, u.username, a.link, a.description\
                                FROM ann_post a, users u \
                                WHERE a.user_id = u.user_id \
-                               ORDER BY a.at_time DESC"))
+                               ORDER BY a.at_time DESC \
+                               LIMIT 10"))
   ann_list = []
   for result in cursor:
     ann_list.append({'time':result[0], 'user':result[1], 'link':result[2], 

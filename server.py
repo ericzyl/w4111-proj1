@@ -468,6 +468,43 @@ def delete_saved_recipe(recipe_id):
 
 
 
+# Review feature
+# Each recipe has its own review page that contains user reviews
+# users can also add review under the review page
+@app.route('/review_page/<int:recipe_id>', methods=['GET', 'POST'])
+def review_page(recipe_id):
+  msg = ''
+  user_id = session['user_id']
+
+  # check if the user review it or not
+  
+  review_query = text("SELECT u.username, r.text, r.likes, r.at_time\
+                       FROM review r INNER JOIN users u \
+                       ON r.user_id = u.user_id \
+                       WHERE r.recipe_id = :recipe_id \
+                       ORDER BY r.at_time DESC")
+  cursor = g.conn.execute(review_query, {"recipe_id": recipe_id})
+  review_list = []
+  for result in cursor:
+    review_list.append({'username': result[0], 'text':result[1], 'likes':result[2],
+                        'at_time':result[3]})
+  context = dict(data = review_list)
+  return render_template("reviews.html", recipe_id=recipe_id, **context)
+    # psql_query = text("SELECT EXISTS(\
+    #                       SELECT 1 \
+    #                       FROM review rw \
+    #                       WHERE rw.user_id = :user_id AND rw.recipe_id = :recipe_id)")
+    # cursor = g.conn.execute(psql_query, {"user_id":user_id, "recipe_id":recipe_id})
+    # exists = cursor.scalar()
+
+    # # if the user has reviewe the recipe, flash message
+    # if exists:
+    #   msg = "You have left a review before."
+    #   flash(msg)
+    # else:
+    #   return 
+
+
 # loggedin user announcement page
 @app.route('/announcement', methods=['GET'])
 def announcement():

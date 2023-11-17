@@ -1,3 +1,7 @@
+<head>
+  <link rel="stylesheet" type="text/css" href="templates/style.css">
+</head>
+
 <html>
   <style>
     body{ 
@@ -47,6 +51,7 @@
         <th>Cook Time</th>
         <th>Serving</th>
         <th>Save</th>
+        <th>Review</th>
       </tr>
     </thead>
     <!-- Table Body -->
@@ -64,6 +69,12 @@
         <td>
           <form method="POST" action="{{ url_for('save_recipe', recipe_id=recipe.recipe_id) }}">
             <button type="submit">Save</button>
+          </form>
+        </td>
+
+        <td>
+          <form method="GET" action="{{ url_for('review_page', recipe_id=recipe.recipe_id) }}">
+            <button type="submit">Review</button>
           </form>
         </td>
       </tr>

@@ -391,6 +391,84 @@ def loggedin_user_all_recipes():
   return render_template("recipe_all_info.html", **context) 
 
 
+
+# Save recipe feature at user_all_recipe page
+@app.route('/save_recipe/<int:recipe_id>', methods=['GET','POST'])
+def save_recipe(recipe_id):
+  msg = ''
+  user_id = session['user_id']
+
+  # check if the user saved it or not, if not post request and save
+  try:
+    psql_query = text("SELECT EXISTS(\
+                          SELECT 1 \
+                          FROM saves s \
+                          WHERE s.user_id = :user_id AND s.recipe_id = :recipe_id)")
+    cursor = g.conn.execute(psql_query, {"user_id": user_id, "recipe_id": recipe_id})
+    exists = cursor.scalar()
+    if exists:
+      msg = 'This recipe was already in your folder.'
+      flash(msg)
+    else:
+      save_query = text("INSERT INTO saves (user_id, recipe_id) \
+                         VALUES(:user_id, :recipe_id)")
+      g.conn.execute(save_query, {"user_id":user_id, "recipe_id":recipe_id})
+      g.conn.commit()
+      msg = 'You successfully save the recipe.'
+      flash(msg)
+  except Exception as e:
+    print(f'Error: {e}')
+    msg = 'An error occured.'
+    flash(msg)
+  
+  return redirect(url_for('loggedin_user_all_recipes'))
+
+
+# display recipes in saved folder
+@app.route('/loggedin_user_saves', methods=['GET'])
+def loggedin_user_saves():
+  user_id = session['user_id']
+  saves_query = text("SELECT r.recipe_id, r.recipe_name, s.on_date, \
+                     r.instruction, r.prep_time, r.cook_time, r.serving \
+                      FROM rec_upload r INNER JOIN saves s \
+                          ON r.recipe_id = s.recipe_id \
+                      WHERE s.user_id = :user_id \
+                      ORDER BY s.on_date DESC")
+  
+  # select in session user id
+  cursor = g.conn.execute(saves_query, {"user_id":user_id})
+  info_list = []
+  for result in cursor:
+    info_list.append({'recipe_id':result[0], 'recipe_name':result[1], 'on_date':result[2],
+                      'instruction':result[3], 'prep_time':result[4], 'cook_time':result[5], 'serving':result[6]})
+    
+  context = dict(data = info_list)
+  return render_template("saves.html", username=session['username'], **context)
+
+
+# delete saved recipes
+@app.route('/delete_saved_recipe/<int:recipe_id>', methods=['GET','POST'])
+def delete_saved_recipe(recipe_id):
+  msg = ''
+  user_id = session['user_id']
+
+  try:
+    psql_query = text("DELETE FROM saves\
+                       WHERE user_id = :user_id AND recipe_id = :recipe_id")
+    g.conn.execute(psql_query, {"user_id":user_id, "recipe_id":recipe_id}) 
+    g.conn.commit()
+    msg = 'You successfully delete it from your folder.'
+    flash(msg)
+  except Exception as e:
+    print(f'Error: {e}')
+    msg = 'An error occured.'
+    flash(msg)
+  
+  return redirect(url_for('loggedin_user_saves'))
+
+
+
+# loggedin user announcement page
 @app.route('/announcement', methods=['GET'])
 def announcement():
   cursor = g.conn.execute(text("SELECT a.at_time, u.username, a.link, a.description\

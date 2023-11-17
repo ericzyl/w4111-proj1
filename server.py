@@ -362,7 +362,7 @@ def user_new_recipe():
                   serving, user_id) VALUES(:name, :instruction, :prep_time, :cook_time, :serving, :user_id)'
     g.conn.execute(text(psql_query), param_dict)
     g.conn.commit()
-    msg = 'New recipe added'
+    msg = 'New recipe added.'
     flash(msg)
   except Exception as e:
     print(f'Error: {e}')
@@ -474,6 +474,7 @@ def delete_saved_recipe(recipe_id):
 @app.route('/review_page/<int:recipe_id>', methods=['GET', 'POST'])
 def review_page(recipe_id):
   msg = ''
+  print('anything here')
   user_id = session['user_id']
 
   # check if the user review it or not
@@ -503,6 +504,46 @@ def review_page(recipe_id):
     #   flash(msg)
     # else:
     #   return 
+
+# Add review
+@app.route('/add_review/<int:recipe_id>', methods=['GET','POST'])
+def add_review(recipe_id):
+  msg = ''
+  likes = ''
+  user_id = session['user_id']
+  content = request.form['content']
+  url = f'/review_page/{recipe_id}'
+  if request.form['like'] == "1":
+    likes = "TRUE"
+  else:
+    likes = "FALSE"
+
+  try:
+    psql_query = text("SELECT EXISTS(\
+                          SELECT 1 \
+                          FROM review rw \
+                          WHERE rw.user_id = :user_id AND rw.recipe_id = :recipe_id)")
+    cursor = g.conn.execute(psql_query, {"user_id":user_id, "recipe_id":recipe_id})
+    exists = cursor.scalar()
+    if exists:
+      msg = 'You have made a review before.'
+      flash(msg)
+    else:
+      param_dict = {'user_id':user_id, 'recipe_id':recipe_id,'content':content, 'likes':likes}
+      psql_query = text("INSERT INTO review (user_id, recipe_id, text, likes) \
+                    VALUES(:user_id, :recipe_id, :content, :likes)")
+      print(psql_query)
+      g.conn.execute(psql_query, param_dict)
+      g.conn.commit()
+      msg = "Review added."
+      flash(msg)
+  except Exception as e:
+    print(f'Error: {e}')
+    msg = 'Please fill in the review.'
+    flash(msg)
+    return redirect(url)
+  
+  return redirect(url)
 
 
 # loggedin user announcement page

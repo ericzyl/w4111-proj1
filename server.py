@@ -370,7 +370,7 @@ def user_new_recipe():
     flash(msg)
     return redirect(url_for('home'))
 
-  return redirect(url_for('home'),)
+  return redirect(url_for('home'))
 
 
 # loggedin user can view full information of the recipes

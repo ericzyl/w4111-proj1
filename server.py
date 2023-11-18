@@ -237,6 +237,22 @@ def add_recipe():
   
   return render_template('success.html')
 
+# Display recipes by categories
+@app.route('/categories')
+def show_categories():
+  cursor = g.conn.execute(text("select * from categories"))
+  category_list = []
+  for category in cursor:
+    category_list.append({'id':category[0], 'name':category[1]})
+  return render_template('categories.html', categories=category_list)
+
+@app.route('/category/<int:category_id>/recipes')
+def category_recipes(category_id):
+    # Fetch recipes for a given category
+    recipes = g.conn.execute(text("select r.recipe_name from rec_upload r, characterize c \
+                                  where c.recipe_id=r.recipe_id and c.cid = :cid"),{"cid": category_id}).fetchall()
+    formatted_recipes = [f"{recipe[0]}" for recipe in recipes]
+    return render_template('show_recipes.html', recipes=formatted_recipes, category_id=category_id)
 
 # ----- authentication system -----
 # to login page
@@ -329,12 +345,18 @@ def home():
 
         # fetch user recipes
         user_id = {'user_id':val[1]}
-        cursor = g.conn.execute(text("SELECT recipe_name, instruction FROM rec_upload WHERE user_id =:user_id"), user_id)
-
+        cursor = g.conn.execute(text("SELECT recipe_name, instruction, recipe_id FROM rec_upload WHERE user_id =:user_id"), user_id)
         recipes_list = []
         for result in cursor:
-          recipes_list.append({'name':result[0], 'instruction':result[1]})
-        context = dict(data = recipes_list)        
+          recipe_id = {"recipe_id":result[2]}
+          cursor2 = g.conn.execute(text("select i.name,u.amount,i.unit \
+                               from ingredients i, use u \
+                               where i.name = u.name and u.recipe_id =:recipe_id"),recipe_id)
+          ingredients = cursor2.fetchall()
+          formatted_ingredients = "; ".join([f"{item[0].title()}: {item[1]} {item[2]}" for item in ingredients])
+          recipes_list.append({'name':result[0], 'instruction':result[1],'ingredients':formatted_ingredients})
+          cursor2.close()
+        context = dict(data = recipes_list)   
         # g.conn.commit()
         return render_template('home.html', username=session['username'], profile= val[0], **context)
     
@@ -352,6 +374,11 @@ def user_new_recipe():
   cook_time = request.form['cook_time']
   serving = request.form['serving']
 
+  # retrieve ingredients input
+  ingredient_names = request.form.getlist('ingredient_name[]')
+  amounts = request.form.getlist('amount[]')
+  units = request.form.getlist('unit[]')  
+
   # retrieve in-session user info
   try:
     user_id = session['user_id']
@@ -359,8 +386,20 @@ def user_new_recipe():
                   'prep_time' : prep_time, 'cook_time' : cook_time,
                   'serving' : serving, 'user_id' : user_id} 
     psql_query = 'INSERT INTO rec_upload (recipe_name, instruction, prep_time, cook_time, \
-                  serving, user_id) VALUES(:name, :instruction, :prep_time, :cook_time, :serving, :user_id)'
-    g.conn.execute(text(psql_query), param_dict)
+                  serving, user_id) VALUES(:name, :instruction, :prep_time, :cook_time, :serving, :user_id) RETURNING recipe_id'
+    recipe_id = g.conn.execute(text(psql_query), param_dict).fetchone()[0]
+    # g.conn.execute(text(psql_query), param_dict)
+
+    # insert ingredients info
+    for name, amount, unit in zip(ingredient_names, amounts, units):
+      # check whether the ingredient exists in ingredients or not
+      existing_ingredient = g.conn.execute(text("SELECT * FROM ingredients WHERE name = :name"), {'name': name}).fetchone()
+      if not existing_ingredient:
+        # if not exist, insert into ingredients
+        g.conn.execute(text("INSERT INTO ingredients (name, unit) VALUES (:name, :unit)"), {'name': name, 'unit': unit})
+        # insert into use table
+        g.conn.execute(text("INSERT INTO use (recipe_id, name, amount) VALUES (:recipe_id, :ingredient_name, :amount)"), {'recipe_id': recipe_id, 'ingredient_name': name, 'amount': amount})
+
     g.conn.commit()
     msg = 'New recipe added'
     flash(msg)
@@ -389,7 +428,6 @@ def loggedin_user_all_recipes():
   context = dict(data = info_list)
 
   return render_template("recipe_all_info.html", **context) 
-
 
 
 # Save recipe feature at user_all_recipe page

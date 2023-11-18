@@ -1,0 +1,17 @@
+<!-- recipes.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Recipes</title>
+</head>
+<body>
+    <h1>Recipes</h1>
+    <ul>
+        {% for recipe in recipes %}
+            <li>{{ recipe }}</li>  <!-- Modify as needed to display recipe details -->
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('show_categories') }}">Back to Categories</a>
+</body>
+</html>

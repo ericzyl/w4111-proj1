@@ -26,6 +26,7 @@
               <tr>
                 <th>Recipe Name</th>
                 <th>Instructions</th>
+                <th>Ingredients</th>
               </tr>
             </thead>
             <!-- Table Body -->
@@ -34,6 +35,7 @@
               <tr>
                 <td>{{ recipe.name }}</td>
                 <td>{{ recipe.instruction }}</td>
+                <td>{{ recipe.ingredients }}</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -55,6 +57,15 @@
           <label for = "serving">Serving</label><br>
           <input type = "number" name = "serving" placeholder="integer"/><br><br>
 
+          <!-- Ingredients Input Fields -->
+          <div id="ingredients">
+            <label for="ingredient">Ingredients</label><br>
+            <input type="text" name="ingredient_name[]" placeholder="Ingredient Name">
+            <input type="text" name="amount[]" placeholder="Amount">
+            <input type="text" name="unit[]" placeholder="Unit"><br>
+          </div>
+          <button type="button" onclick="addIngredient()">Add Another Ingredient</button><br><br>
+
           <input type="submit" value="Add"></p>
         </form>
         {% with messages = get_flashed_messages() %}
@@ -73,6 +84,20 @@
         <br>
         <p><a href="{{url_for('logout')}}">Logout</a></p>
 
-
+        <script>
+          function addIngredient() {
+                var container = document.getElementById("ingredients");
+                var newDiv = document.createElement("div");
+                newDiv.className = "ingredient-group";
+                newDiv.innerHTML = '<input type="text" name="ingredient_name[]" placeholder="Ingredient Name">'
+                                 + '<input type="text" name="amount[]" placeholder="Amount">'
+                                 + '<input type="text" name="unit[]" placeholder="Unit">'
+                                 + '<button type="button" onclick="removeIngredient(this)">Remove</button><br>';
+                container.appendChild(newDiv);
+            }
+          function removeIngredient(button) {
+                button.parentElement.remove();
+            }
+        </script>
     </body>
 </html>

@@ -401,7 +401,7 @@ def user_new_recipe():
         g.conn.execute(text("INSERT INTO use (recipe_id, name, amount) VALUES (:recipe_id, :ingredient_name, :amount)"), {'recipe_id': recipe_id, 'ingredient_name': name, 'amount': amount})
 
     g.conn.commit()
-    msg = 'New recipe added'
+    msg = 'New recipe added.'
     flash(msg)
   except Exception as e:
     print(f'Error: {e}')
@@ -409,7 +409,7 @@ def user_new_recipe():
     flash(msg)
     return redirect(url_for('home'))
 
-  return redirect(url_for('home'),)
+  return redirect(url_for('home'))
 
 
 # loggedin user can view full information of the recipes
@@ -504,6 +504,86 @@ def delete_saved_recipe(recipe_id):
   
   return redirect(url_for('loggedin_user_saves'))
 
+
+
+# Review feature
+# Each recipe has its own review page that contains user reviews
+# users can also add review under the review page
+@app.route('/review_page/<int:recipe_id>', methods=['GET', 'POST'])
+def review_page(recipe_id):
+  msg = ''
+  print('anything here')
+  user_id = session['user_id']
+
+  # check if the user review it or not
+  
+  review_query = text("SELECT u.username, r.text, r.likes, r.at_time\
+                       FROM review r INNER JOIN users u \
+                       ON r.user_id = u.user_id \
+                       WHERE r.recipe_id = :recipe_id \
+                       ORDER BY r.at_time DESC")
+  cursor = g.conn.execute(review_query, {"recipe_id": recipe_id})
+  review_list = []
+  for result in cursor:
+    review_list.append({'username': result[0], 'text':result[1], 'likes':result[2],
+                        'at_time':result[3]})
+  context = dict(data = review_list)
+  return render_template("reviews.html", recipe_id=recipe_id, **context)
+    # psql_query = text("SELECT EXISTS(\
+    #                       SELECT 1 \
+    #                       FROM review rw \
+    #                       WHERE rw.user_id = :user_id AND rw.recipe_id = :recipe_id)")
+    # cursor = g.conn.execute(psql_query, {"user_id":user_id, "recipe_id":recipe_id})
+    # exists = cursor.scalar()
+
+    # # if the user has reviewe the recipe, flash message
+    # if exists:
+    #   msg = "You have left a review before."
+    #   flash(msg)
+    # else:
+    #   return 
+
+# Add review
+@app.route('/add_review/<int:recipe_id>', methods=['GET','POST'])
+def add_review(recipe_id):
+  msg = ''
+  likes = ''
+  user_id = session['user_id']
+  content = request.form['content']
+  url = f'/review_page/{recipe_id}'
+  # print(request.form['like'])
+  # print(type(request.form['like']))
+  if request.form['like'] == "1":
+    likes = "TRUE"
+  else:
+    likes = "FALSE"
+
+  try:
+    psql_query = text("SELECT EXISTS(\
+                          SELECT 1 \
+                          FROM review rw \
+                          WHERE rw.user_id = :user_id AND rw.recipe_id = :recipe_id)")
+    cursor = g.conn.execute(psql_query, {"user_id":user_id, "recipe_id":recipe_id})
+    exists = cursor.scalar()
+    if exists:
+      msg = 'You have made a review before.'
+      flash(msg)
+    else:
+      param_dict = {'user_id':user_id, 'recipe_id':recipe_id,'content':content, 'likes':likes}
+      psql_query = text("INSERT INTO review (user_id, recipe_id, text, likes) \
+                    VALUES(:user_id, :recipe_id, :content, :likes)")
+      print(psql_query)
+      g.conn.execute(psql_query, param_dict)
+      g.conn.commit()
+      msg = "Review added."
+      flash(msg)
+  except Exception as e:
+    print(f'Error: {e}')
+    msg = 'Please fill in the review.'
+    flash(msg)
+    return redirect(url)
+  
+  return redirect(url)
 
 
 # loggedin user announcement page

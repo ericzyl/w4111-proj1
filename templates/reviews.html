@@ -1,0 +1,72 @@
+<html>
+  <style>
+    body{ 
+      font-size: 15pt;
+      font-family: arial;
+    }
+    table {
+    border-collapse: collapse;
+    width: 100%;
+    }
+    th, td {
+      border: 1px solid black;
+      padding: 8px;
+      text-align: left;
+    } 
+  </style>
+
+
+<body>
+  <h2>Reviews</h2>
+  <p><a href="{{url_for('loggedin_user_all_recipes')}}">Back</a></p>
+
+  <table>
+    <!-- Table Header -->
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Review</th>
+        <th>Like</th>
+        <th>Time</th>
+      </tr>
+    </thead>
+    <!-- Table Body -->
+    <tbody>
+      {% for review in data %}
+      <tr>
+        <td>{{ review.username }}</td>
+        <td>{{ review.text }}</td>
+        <td>{{ review.likes }}</td>
+        <td>{{ review.at_time }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <br>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul class=flashes>
+      {% for message in messages %}
+        <li>{{ message }}</li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+  <form method="POST" action="{{ url_for('add_review', recipe_id=recipe_id) }}">
+    <label for = "content">Review<label><br>
+    <textarea name = "content" placeholder = "my review...(>10 char)"></textarea><br>
+
+    <!-- <label for = "like">Like</label><br> -->
+    <!-- <input type="hidden" name="like" value="0"> -->
+    Like<input type="checkbox" name="like" value="1">
+    <br>
+
+    <input type="submit" value="Submit Review">
+</form>
+
+
+</body>
+
+
+</html>

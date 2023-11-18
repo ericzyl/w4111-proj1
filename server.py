@@ -513,6 +513,8 @@ def add_review(recipe_id):
   user_id = session['user_id']
   content = request.form['content']
   url = f'/review_page/{recipe_id}'
+  # print(request.form['like'])
+  # print(type(request.form['like']))
   if request.form['like'] == "1":
     likes = "TRUE"
   else:

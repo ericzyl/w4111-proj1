@@ -4,12 +4,50 @@
 <head>
     <meta charset="UTF-8">
     <title>Recipes</title>
+    <style>
+        .recipe-table {
+            width: 80%;
+            border-collapse: collapse;
+        }
+        .recipe-table th, .recipe-table td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        .recipe-table th {
+            background-color: #f2f2f2;
+        }
+    </style>
 </head>
 <body>
     <h1>Recipes</h1>
     <ul>
         {% for recipe in recipes %}
-            <li>{{ recipe }}</li>  <!-- Modify as needed to display recipe details -->
+            <li>
+                <h2>{{ recipe.recipe_name }}</h2>
+                <table class="recipe-table">
+                    <tr>
+                        <th>Ingredients</th>
+                        <td>{{ recipe.ingredients }}</td>
+                    </tr>
+                    <tr>
+                        <th>Instruction</th>
+                        <td>{{ recipe.instruction }}</td>
+                    </tr>
+                    <tr>
+                        <th>Preparation Time</th>
+                        <td>{{ recipe.prep_time }}</td>
+                    </tr>
+                    <tr>
+                        <th>Cooking Time</th>
+                        <td>{{ recipe.cook_time }}</td>
+                    </tr>
+                    <tr>
+                        <th>Serving</th>
+                        <td>{{ recipe.serving }}</td>
+                    </tr>
+                </table>
+            </li>
         {% endfor %}
     </ul>
     <a href="{{ url_for('show_categories') }}">Back to Categories</a>

@@ -249,9 +249,16 @@ def show_categories():
 @app.route('/category/<int:category_id>/recipes')
 def category_recipes(category_id):
     # Fetch recipes for a given category
-    recipes = g.conn.execute(text("select r.recipe_name from rec_upload r, characterize c \
+    recipes = g.conn.execute(text("select r.recipe_name, r.instruction, r.prep_time, r.cook_time, r.serving, r.recipe_id \
+                                  from rec_upload r, characterize c \
                                   where c.recipe_id=r.recipe_id and c.cid = :cid"),{"cid": category_id}).fetchall()
-    formatted_recipes = [f"{recipe[0]}" for recipe in recipes]
+    formatted_recipes = []
+    for recipe in recipes:
+      ingredients = g.conn.execute(text("select i.name,u.amount,i.unit \
+                               from ingredients i, use u \
+                               where i.name = u.name and u.recipe_id =:recipe_id"),{"recipe_id":recipe[5]}).fetchall()
+      formatted_ingredients = "; ".join([f"{item[0].title()}: {item[1]} {item[2]}" for item in ingredients])
+      formatted_recipes.append({"recipe_name": recipe[0], "instruction": recipe[1], "prep_time": recipe[2],"cook_time":recipe[3],"serving":recipe[4],"ingredients":formatted_ingredients})
     return render_template('show_recipes.html', recipes=formatted_recipes, category_id=category_id)
 
 # ----- authentication system -----

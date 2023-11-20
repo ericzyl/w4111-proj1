@@ -349,6 +349,15 @@ def home():
         param_dict = {'username': user}
         val = g.conn.execute(profile_query, param_dict).fetchone()
 
+        # check membership status
+        premium_query = text('SELECT payment_plan FROM premium_user WHERE user_id = :user_id')
+        premium_val = g.conn.execute(premium_query, {'user_id': val[1]}).fetchone()
+        membership_level = premium_val[0] if premium_val else None
+
+        category_list = []
+        categories = g.conn.execute(text("SELECT cid, cname FROM categories")).fetchall()
+        for category in categories:
+          category_list.append({'cid':category[0],"cname":category[1]})
 
         # fetch user recipes
         user_id = {'user_id':val[1]}
@@ -356,6 +365,7 @@ def home():
         recipes_list = []
         for result in cursor:
           recipe_id = {"recipe_id":result[2]}
+          # fetch ingredients 
           cursor2 = g.conn.execute(text("select i.name,u.amount,i.unit \
                                from ingredients i, use u \
                                where i.name = u.name and u.recipe_id =:recipe_id"),recipe_id)
@@ -363,8 +373,9 @@ def home():
           formatted_ingredients = "; ".join([f"{item[0].title()}: {item[1]} {item[2]}" for item in ingredients])
           recipes_list.append({'name':result[0], 'instruction':result[1],'ingredients':formatted_ingredients})
           cursor2.close()
-        context = dict(data = recipes_list)   
+        context = dict(data = recipes_list, membership_level=membership_level,categories=category_list)   
         # g.conn.commit()
+        g.conn.close()
         return render_template('home.html', username=session['username'], profile= val[0], **context)
     
     return redirect(url_for('login'))
@@ -385,7 +396,7 @@ def user_new_recipe():
   ingredient_names = request.form.getlist('ingredient_name[]')
   amounts = request.form.getlist('amount[]')
   units = request.form.getlist('unit[]')  
-
+  selected_category = request.form['category_id']
   # retrieve in-session user info
   try:
     user_id = session['user_id']
@@ -396,6 +407,10 @@ def user_new_recipe():
                   serving, user_id) VALUES(:name, :instruction, :prep_time, :cook_time, :serving, :user_id) RETURNING recipe_id'
     recipe_id = g.conn.execute(text(psql_query), param_dict).fetchone()[0]
     # g.conn.execute(text(psql_query), param_dict)
+
+    # insert into characterize 
+    if selected_category and selected_category != 'None':
+      g.conn.execute(text("INSERT INTO characterize (recipe_id, cid) VALUES (:recipe_id, :cid)"), {'recipe_id': recipe_id,'cid': selected_category})
 
     # insert ingredients info
     for name, amount, unit in zip(ingredient_names, amounts, units):
@@ -410,6 +425,7 @@ def user_new_recipe():
     g.conn.commit()
     msg = 'New recipe added.'
     flash(msg)
+    g.conn.close()
   except Exception as e:
     print(f'Error: {e}')
     msg = 'Please fill in correct information.'
@@ -433,7 +449,7 @@ def loggedin_user_all_recipes():
                       'instruction':result[4], 'prep_time':result[5], 'cook_time':result[6], 'serving':result[7]})
   
   context = dict(data = info_list)
-
+  cursor.close()
   return render_template("recipe_all_info.html", **context) 
 
 
@@ -461,6 +477,7 @@ def save_recipe(recipe_id):
       g.conn.commit()
       msg = 'You successfully save the recipe.'
       flash(msg)
+      g.conn.close()
   except Exception as e:
     print(f'Error: {e}')
     msg = 'An error occured.'
@@ -535,6 +552,7 @@ def review_page(recipe_id):
     review_list.append({'username': result[0], 'text':result[1], 'likes':result[2],
                         'at_time':result[3]})
   context = dict(data = review_list)
+  cursor.close()
   return render_template("reviews.html", recipe_id=recipe_id, **context)
     # psql_query = text("SELECT EXISTS(\
     #                       SELECT 1 \
@@ -584,6 +602,7 @@ def add_review(recipe_id):
       g.conn.commit()
       msg = "Review added."
       flash(msg)
+      g.conn.close()
   except Exception as e:
     print(f'Error: {e}')
     msg = 'Please fill in the review.'
@@ -625,6 +644,7 @@ def user_new_announcement():
     g.conn.commit()
     msg = "New announcement posted"
     flash(msg)
+    g.conn.close()
   except Exception as e:
     print(f'Error: {e}')
     msg = 'Please fill the form correctly'

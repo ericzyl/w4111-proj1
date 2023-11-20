@@ -18,7 +18,15 @@
         <h2>{{username}}'s home page</h2>
         <hr/>
         <div><b>My profile: </b>{{profile}}</div><br><br>
-
+        {% if membership_level %}
+            <p>You are a premium member! Membership Level: {{ membership_level }}</p>
+            {% if membership_level == 'Gold' %}
+            {% elif membership_level == 'Silver' %}
+            {% elif membership_level == 'Bronze' %}
+            {% endif %}
+        {% else %}
+          <p>You are not a premium member.</p>
+        {% endif %}
         <div><b>My recipe:</b></div><br>
         <table>
             <!-- Table Header -->
@@ -56,6 +64,14 @@
 
           <label for = "serving">Serving</label><br>
           <input type = "number" name = "serving" placeholder="integer"/><br><br>
+
+          <label for="category">Category</label>
+          <select id="category" name="category_id" required>
+              <option value="None">     </option>
+              {% for category in categories %}
+              <option value="{{ category.cid }}">{{ category.cname }}</option>
+              {% endfor %}
+          </select>
 
           <!-- Ingredients Input Fields -->
           <div id="ingredients">
